@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>e-Gbédiga | Plateforme Intelligente de Santé Mère-Enfant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        :root {
+            --bg-warm: #FDFBF7;
+            --primary-soft: #4A7C7A;
+            --accent-warm: #D4A373;
+            --text-main: #2C3639;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-warm);
+            color: var(--text-main);
+            scroll-behavior: smooth;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(212, 163, 115, 0.1);
+        }
+
+        .nav-link.active {
+            border-bottom: 2px solid var(--primary-soft);
+            color: var(--primary-soft);
+        }
+
+        .module-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(74, 124, 122, 0.1);
+        }
+
+        .risk-indicator {
+            transition: all 0.5s ease;
+        }
+
+        /* Animation pour le bouton Pilotage DHIS2 */
+        @keyframes pulse-soft {
+            0%, 100% { 
+                transform: scale(1); 
+                box-shadow: 0 0 0 0 rgba(74, 124, 122, 0.4); 
+            }
+            50% { 
+                transform: scale(1.05); 
+                box-shadow: 0 0 0 12px rgba(74, 124, 122, 0); 
+            }
+        }
+
+        .btn-sync-animate {
+            animation: pulse-soft 3s infinite;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+<!-- Chosen Palette: Harmonie Sahélienne (Fond crème #FDFBF7, Vert sauge #4A7C7A, Terre de Sienne #D4A373) -->
+<!-- Application Structure Plan: 
+    La SPA est structurée en 4 zones narratives :
+    1. "Le Défi" : Visualisation du contexte béninois et des 3 retards.
+    2. "L'Écosystème" : Exploration interactive des 6 modules du continuum.
+    3. "Le Cœur Intelligent" : Simulateur interactif de l'algorithme SRO pour démontrer l'IA.
+    4. "Impact & Déploiement" : Analyse du SROI en FCFA et chronogramme 36 mois.
+    Mise à jour : Animation du bouton CTA de navigation pour souligner la connectivité DHIS2.
+-->
+<!-- Visualization & Content Choices: 
+    - Contexte -> Comparaison Barres (Chart.js) -> Visualiser l'écart ODD.
+    - Modèle 3 Retards -> Cartes Interactives HTML/CSS -> Expliquer les points de friction.
+    - Modules -> Grid interactif -> Détails au survol/clic.
+    - Algorithme SRO -> Calculateur JS en temps réel -> Engager l'utilisateur dans la logique clinique.
+    - SROI -> Graphique Empilé (Chart.js) -> Prouver la rentabilité financière pour l'État.
+    - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+-->
+
+    <nav class="fixed top-0 w-full z-50 glass-card px-6 py-4 flex justify-between items-center border-b border-gray-100">
+        <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 rounded-full bg-[#4A7C7A] flex items-center justify-center text-white font-bold">eG</div>
+            <span class="text-xl font-semibold tracking-tight text-[#4A7C7A]">e-Gbédiga</span>
+        </div>
+        <div class="hidden md:flex space-x-8 text-sm font-medium uppercase tracking-widest">
+            <a href="#contexte" class="nav-link hover:text-[#4A7C7A]">Contexte</a>
+            <a href="#solution" class="nav-link hover:text-[#4A7C7A]">Solution</a>
+            <a href="#algorithme" class="nav-link hover:text-[#4A7C7A]">Algorithme</a>
+            <a href="#impact" class="nav-link hover:text-[#4A7C7A]">Impact</a>
+        </div>
+        <button class="bg-[#4A7C7A] text-white px-5 py-2 rounded-full text-sm font-medium hover:opacity-90 transition btn-sync-animate">
+            <span class="flex items-center space-x-2">
+                <span class="w-2 h-2 bg-green-400 rounded-full animate-ping"></span>
+                <span>Pilotage DHIS2</span>
+            </span>
+        </button>
+    </nav>
+
+    <main class="pt-24 pb-12">
+        
+        <!-- SECTION CONTEXTE -->
+        <section id="contexte" class="container mx-auto px-6 mb-24">
+            <div class="max-w-4xl mx-auto text-center mb-16">
+                <h1 class="text-4xl md:text-5xl font-bold mb-6 text-[#2C3639]">Sauver des vies au Bénin par l'intelligence de données</h1>
+                <p class="text-lg text-gray-600 leading-relaxed">
+                    Le Bénin fait face à un défi critique : 448 décès maternels pour 100 000 naissances. 
+                    Cette section analyse l'écart entre la réalité actuelle et les Objectifs de Développement Durable (ODD), 
+                    en identifiant les trois retards structurels que notre plateforme vient corriger.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="chart-container">
+                    <canvas id="ctxChart"></canvas>
+                </div>
+                <div class="space-y-8">
+                    <div class="flex space-x-4">
+                        <div class="flex-shrink-0 w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">1</div>
+                        <div>
+                            <h3 class="font-bold text-lg">Retard de Décision</h3>
+                            <p class="text-gray-500 text-sm">Difficulté à identifier les signes d'alerte au niveau communautaire par manque d'information.</p>
+                        </div>
+                    </div>
+                    <div class="flex space-x-4">
+                        <div class="flex-shrink-0 w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">2</div>
+                        <div>
+                            <h3 class="font-bold text-lg">Retard de Transport</h3>
+                            <p class="text-gray-500 text-sm">L'absence de géolocalisation et de coordination retarde le transfert vers les centres de référence.</p>
+                        </div>
+                    </div>
+                    <div class="flex space-x-4">
+                        <div class="flex-shrink-0 w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">3</div>
+                        <div>
+                            <h3 class="font-bold text-lg">Retard de Prise en Charge</h3>
+                            <p class="text-gray-500 text-sm">Le manque de transmission anticipée des dossiers cliniques sature les urgences hospitalières.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION SOLUTION (MODULES) -->
+        <section id="solution" class="bg-gray-50 py-24 mb-24">
+            <div class="container mx-auto px-6">
+                <div class="max-w-4xl mx-auto text-center mb-16">
+                    <h2 class="text-3xl font-bold mb-4">Le Continuum de Soins Intégré</h2>
+                    <p class="text-gray-600">
+                        e-Gbédiga n'est pas une simple application, c'est un écosystème modulaire couvrant tout le cycle de vie mère-enfant. 
+                        Chaque module communique en temps réel pour assurer qu'aucun patient ne soit "perdu de vue".
+                    </p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-8">
+                    <!-- Module 1 -->
+                    <div class="module-card p-8 bg-white rounded-2xl shadow-sm border border-gray-100">
+                        <span class="text-xs font-bold text-[#D4A373] uppercase tracking-widest">Pré-conceptuel</span>
+                        <h3 class="text-xl font-bold mt-2 mb-4">FAP & Vaccination</h3>
+                        <p class="text-gray-500 text-sm mb-6">Identification communautaire des femmes en âge de procréer et suivi rigoureux de la VAT.</p>
+                        <ul class="text-xs space-y-2 text-gray-400">
+                            <li>• Cartographie GPS</li>
+                            <li>• Relances SMS/Vocales</li>
+                        </ul>
+                    </div>
+                    <!-- Module 2 -->
+                    <div class="module-card p-8 bg-white rounded-2xl shadow-sm border border-[#4A7C7A] ring-1 ring-[#4A7C7A] ring-opacity-20">
+                        <span class="text-xs font-bold text-[#4A7C7A] uppercase tracking-widest">Moteur IA</span>
+                        <h3 class="text-xl font-bold mt-2 mb-4">Grossesse Intelligente</h3>
+                        <p class="text-gray-500 text-sm mb-6">Suivi prénatal (CPN) assisté par notre moteur de score de risque prédictif.</p>
+                        <ul class="text-xs space-y-2 text-gray-400">
+                            <li>• Dossier Obstétrical Unique</li>
+                            <li>• Alertes Multilingues</li>
+                        </ul>
+                    </div>
+                    <!-- Module 3 -->
+                    <div class="module-card p-8 bg-white rounded-2xl shadow-sm border border-gray-100">
+                        <span class="text-xs font-bold text-red-400 uppercase tracking-widest">Urgences</span>
+                        <h3 class="text-xl font-bold mt-2 mb-4">Accouchement & Transfert</h3>
+                        <p class="text-gray-500 text-sm mb-6">Partogramme numérique et régulation immédiate des transferts via protocole FHIR.</p>
+                        <ul class="text-xs space-y-2 text-gray-400">
+                            <li>• Alerte Rouge Instantanée</li>
+                            <li>• Liaison Hôpital de Zone</li>
+                        </ul>
+                    </div>
+                    <!-- Module 4 -->
+                    <div class="module-card p-8 bg-white rounded-2xl shadow-sm border border-gray-100">
+                        <span class="text-xs font-bold text-[#D4A373] uppercase tracking-widest">Pédiatrie</span>
+                        <h3 class="text-xl font-bold mt-2 mb-4">Suivi Postnatal 0-5 ans</h3>
+                        <p class="text-gray-500 text-sm mb-6">Carnet de santé digital et surveillance de la croissance (standards OMS).</p>
+                        <ul class="text-xs space-y-2 text-gray-400">
+                            <li>• Courbes de Croissance</li>
+                            <li>• Alertes Malnutrition</li>
+                        </ul>
+                    </div>
+                    <!-- Module 5 -->
+                    <div class="module-card p-8 bg-white rounded-2xl shadow-sm border border-gray-100">
+                        <span class="text-xs font-bold text-[#4A7C7A] uppercase tracking-widest">Gouvernance</span>
+                        <h3 class="text-xl font-bold mt-2 mb-4">Décisionnel & DHIS2</h3>
+                        <p class="text-gray-500 text-sm mb-6">Tableaux de bord pour les directions départementales et synchronisation automatique.</p>
+                        <ul class="text-xs space-y-2 text-gray-400">
+                            <li>• Exportation sans erreur</li>
+                            <li>• Cartographie des foyers</li>
+                        </ul>
+                    </div>
+                    <!-- Module 6 -->
+                    <div class="module-card p-8 bg-white rounded-2xl shadow-sm border border-gray-100">
+                        <span class="text-xs font-bold text-blue-400 uppercase tracking-widest">Connectivité</span>
+                        <h3 class="text-xl font-bold mt-2 mb-4">IoT Médical</h3>
+                        <p class="text-gray-500 text-sm mb-6">Intégration d'objets connectés (tensiomètres, oxymètres) via Bluetooth.</p>
+                        <ul class="text-xs space-y-2 text-gray-400">
+                            <li>• Lecture sans erreur humaine</li>
+                            <li>• Prise de constantes rapide</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION ALGORITHME (INTERACTIF) -->
+        <section id="algorithme" class="container mx-auto px-6 mb-24">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div>
+                    <h2 class="text-3xl font-bold mb-6">Le Moteur de Score de Risque Obstétrical (SRO)</h2>
+                    <p class="text-gray-600 mb-8 leading-relaxed">
+                        Notre innovation réside dans un algorithme pondéré qui calcule en temps réel la criticité d'une grossesse. 
+                        <strong>Testez-le par vous-même :</strong> Ajustez les variables cliniques à droite pour voir comment le protocole d'action change instantanément.
+                    </p>
+                    <div class="p-6 bg-[#4A7C7A] bg-opacity-5 rounded-2xl border-l-4 border-[#4A7C7A]">
+                        <p class="italic text-sm text-[#4A7C7A]">
+                            "Le score S sature automatiquement en cas de danger vital imminent (Hémorragie, Convulsions), court-circuitant les facteurs chroniques."
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
+                    <h4 class="font-bold mb-6 flex justify-between">
+                        Calculateur de Risque Clinique
+                        <span id="scoreDisplay" class="text-[#4A7C7A]">0.0</span>
+                    </h4>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Âge de la patiente</label>
+                            <select id="ageVar" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-[#4A7C7A] outline-none">
+                                <option value="0">Entre 18 et 40 ans</option>
+                                <option value="1.5">Moins de 18 ou plus de 40 ans (+1.5)</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium">Antécédent de Césarienne</span>
+                            <input type="checkbox" id="cesaVar" value="3.0" class="w-5 h-5 text-[#4A7C7A] rounded">
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium">Tension Artérielle Systolique ≥ 160</span>
+                            <input type="checkbox" id="tasVar" value="10.0" class="w-5 h-5 text-red-500 rounded">
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium">Métrorragies Actives (Saignements)</span>
+                            <input type="checkbox" id="metroVar" value="10.0" class="w-5 h-5 text-red-500 rounded">
+                        </div>
+
+                        <div id="riskLevel" class="risk-indicator mt-8 p-4 rounded-xl text-center font-bold text-sm bg-gray-100">
+                            INITIALISATION...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION IMPACT & SROI -->
+        <section id="impact" class="bg-[#2C3639] text-white py-24">
+            <div class="container mx-auto px-6">
+                <div class="max-w-4xl mx-auto text-center mb-16">
+                    <h2 class="text-3xl font-bold mb-4">Investissement & Bénéfices Sociaux (SROI)</h2>
+                    <p class="text-gray-300">
+                        Chaque franc investi dans e-Gbédiga génère 4,2 FCFA de bénéfices directs pour le système de santé béninois. 
+                        Ce graphique illustre la valeur des complications évitées et l'efficacité administrative sur 3 ans.
+                    </p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <div class="chart-container">
+                        <canvas id="sroiChart"></canvas>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-6 bg-white bg-opacity-5 rounded-2xl">
+                            <span class="text-3xl font-bold text-[#D4A373]">4,2</span>
+                            <p class="text-xs text-gray-400 mt-2 uppercase tracking-widest">SROI Ratio</p>
+                        </div>
+                        <div class="p-6 bg-white bg-opacity-5 rounded-2xl">
+                            <span class="text-3xl font-bold text-[#D4A373]">-80%</span>
+                            <p class="text-xs text-gray-400 mt-2 uppercase tracking-widest">Coût Réanimation</p>
+                        </div>
+                        <div class="p-6 bg-white bg-opacity-5 rounded-2xl">
+                            <span class="text-3xl font-bold text-[#D4A373]">100%</span>
+                            <p class="text-xs text-gray-400 mt-2 uppercase tracking-widest">Sync DHIS2</p>
+                        </div>
+                        <div class="p-6 bg-white bg-opacity-5 rounded-2xl">
+                            <span class="text-3xl font-bold text-[#D4A373]">90%+</span>
+                            <p class="text-xs text-gray-400 mt-2 uppercase tracking-widest">Achèvement CPN4</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white py-12 border-t border-gray-100">
+        <div class="container mx-auto px-6 flex flex-col md:row justify-between items-center">
+            <div class="flex items-center space-x-2 mb-4 md:mb-0">
+                <div class="w-6 h-6 rounded-full bg-[#4A7C7A] flex items-center justify-center text-white text-[10px] font-bold">eG</div>
+                <span class="text-lg font-semibold text-gray-400 italic">e-Gbédiga x Bénin Santé</span>
+            </div>
+            <p class="text-sm text-gray-400">© 2026 - Solution Souveraine de Santé Numérique en République du Bénin.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- LOGIQUE CALCULATEUR SRO ---
+        const ageVar = document.getElementById('ageVar');
+        const cesaVar = document.getElementById('cesaVar');
+        const tasVar = document.getElementById('tasVar');
+        const metroVar = document.getElementById('metroVar');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const riskLevel = document.getElementById('riskLevel');
+
+        function calculateSRO() {
+            let score = parseFloat(ageVar.value);
+            if(cesaVar.checked) score += parseFloat(cesaVar.value);
+            if(tasVar.checked) score += parseFloat(tasVar.value);
+            if(metroVar.checked) score += parseFloat(metroVar.value);
+
+            scoreDisplay.innerText = score.toFixed(1);
+
+            if(score < 3) {
+                riskLevel.innerText = "RISQUE FAIBLE : Suivi standard";
+                riskLevel.className = "risk-indicator mt-8 p-4 rounded-xl text-center font-bold text-sm bg-green-50 text-green-700";
+            } else if (score >= 3 && score < 6) {
+                riskLevel.innerText = "RISQUE MODÉRÉ : Visite ASC sous 48h";
+                riskLevel.className = "risk-indicator mt-8 p-4 rounded-xl text-center font-bold text-sm bg-orange-50 text-orange-700 border border-orange-200";
+            } else {
+                riskLevel.innerText = "URGENCE OBSTÉTRICALE : Transfert Immédiat";
+                riskLevel.className = "risk-indicator mt-8 p-4 rounded-xl text-center font-bold text-sm bg-red-600 text-white shadow-lg animate-pulse";
+            }
+        }
+
+        [ageVar, cesaVar, tasVar, metroVar].forEach(el => el.addEventListener('change', calculateSRO));
+        calculateSRO();
+
+        // --- VISUALISATIONS CHART.JS ---
+        
+        // 1. Chart Contexte (Ecart ODD)
+        const ctxChart = new Chart(document.getElementById('ctxChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['Bénin Actuel', 'Objectif ODD 2030'],
+                datasets: [{
+                    label: 'Mortalité (pour 100k)',
+                    data: [448, 70],
+                    backgroundColor: ['#D4A373', '#4A7C7A'],
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // 2. Chart SROI (Valeur générée)
+        const sroiChart = new Chart(document.getElementById('sroiChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Complications Évitées', 'Efficacité Admin.', 'Transport Optimisé'],
+                datasets: [{
+                    data: [60, 25, 15],
+                    backgroundColor: ['#4A7C7A', '#D4A373', '#89A8A7'],
+                    borderWidth: 0,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: 'white', padding: 20, font: { size: 10 } }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
